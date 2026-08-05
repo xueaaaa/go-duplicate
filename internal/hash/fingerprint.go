@@ -9,7 +9,7 @@ import (
 
 func Fingerprint(file file.File, sampleSize int64) ([]byte, error) {
 	if file.Size <= 2*sampleSize {
-		// TODO full sha-256
+		return Hash(file)
 	}
 
 	f, err := os.Open(file.Path)

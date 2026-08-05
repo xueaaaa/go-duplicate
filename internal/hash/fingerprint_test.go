@@ -11,16 +11,22 @@ import (
 
 func TestFingerprint(t *testing.T) {
 	dir := t.TempDir()
-	content := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	path := filepath.Join(dir, "test.bin")
-	os.WriteFile(path, content, 0644)
+	contentSF := []byte("ABC")
+	pathSF := filepath.Join(dir, "test_small_file.bin")
+	os.WriteFile(pathSF, contentSF, 0644)
+	contentLF := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	pathLF := filepath.Join(dir, "test_large_file.bin")
+	os.WriteFile(pathLF, contentLF, 0644)
 
 	const sampleSize = int64(4)
 
 	h := sha256.New()
-	h.Write(content[:sampleSize])
-	h.Write(content[int64(len(content))-sampleSize:])
-	expected := h.Sum(nil)
+	h.Write(contentSF)
+	expectedSF := h.Sum(nil)
+	h.Reset()
+	h.Write(contentLF[:sampleSize])
+	h.Write(contentLF[int64(len(contentLF))-sampleSize:])
+	expectedLF := h.Sum(nil)
 
 	tests := []struct {
 		name     string
@@ -28,9 +34,14 @@ func TestFingerprint(t *testing.T) {
 		expected []byte
 	}{
 		{
+			name:     "small_file",
+			file:     file.File{Path: pathSF, Size: int64(len(contentSF))},
+			expected: expectedSF,
+		},
+		{
 			name:     "large_file",
-			file:     file.File{Path: path, Size: int64(len(content))},
-			expected: expected,
+			file:     file.File{Path: pathLF, Size: int64(len(contentLF))},
+			expected: expectedLF,
 		},
 	}
 	for _, tt := range tests {
