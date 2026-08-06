@@ -45,15 +45,10 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 			continue
 		}
 
-		size := int64(0)
-		for _, f := range v {
-			size += f.Size
-		}
-
 		group := DuplicateGroup{
-			Hash:  k,
-			Size:  size,
-			Files: v,
+			Hash:     k,
+			FileSize: v[0].Size,
+			Files:    v,
 		}
 		groups = append(groups, group)
 	}

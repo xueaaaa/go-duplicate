@@ -42,8 +42,6 @@ func TestFind(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Log(groups)
-
 			if len(groups) != tt.expected {
 				t.Fatalf("expected %x groups, got %x", tt.expected, len(groups))
 			}
