@@ -33,7 +33,28 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		}
 
 		for _, f := range v {
-			hash, err := hash2.Fingerprint(f, params)
+			fingerprint, err := hash2.Fingerprint(f, params)
+			if err != nil {
+				if util.IsSkippableFSError(err) {
+					continue
+				}
+				return nil, err
+			}
+
+			var key [32]byte
+			copy(key[:], fingerprint)
+			fingerprints[key] = append(fingerprints[key], f)
+		}
+	}
+
+	hashes := make (map[[32]byte][]file.File)
+	for _, v := range fingerprints {
+		if len(v) <= 1 {
+			continue
+		}
+
+		for _, f := range v {
+			hash, err := hash2.Hash(f)
 			if err != nil {
 				if util.IsSkippableFSError(err) {
 					continue
@@ -43,12 +64,12 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 
 			var key [32]byte
 			copy(key[:], hash)
-			fingerprints[key] = append(fingerprints[key], f)
+			hashes[key] = append(hashes[key], f)
 		}
 	}
 
 	groups := make([]DuplicateGroup, 0)
-	for k, v := range fingerprints {
+	for k, v := range hashes {
 		if len(v) <= 1 {
 			continue
 		}
