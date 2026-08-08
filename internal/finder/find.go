@@ -1,10 +1,12 @@
 package finder
 
 import (
+	"cmp"
 	"context"
 	"go-duplicate/internal/file"
 	hash2 "go-duplicate/internal/hash"
 	"go-duplicate/internal/util"
+	"slices"
 )
 
 func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PARAMS STRUCT **/) ([]DuplicateGroup, error) {
@@ -56,6 +58,10 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		}
 		groups = append(groups, group)
 	}
+
+	slices.SortFunc(groups, func(a, b DuplicateGroup) int {
+		return cmp.Compare(b.FileSize, a.FileSize)
+	})
 
 	return groups, nil
 }
