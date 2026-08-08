@@ -14,13 +14,10 @@ func Hash(file file.File) ([]byte, error) {
 	}
 	defer f.Close()
 
-	buffer := make([]byte, file.Size)
-	if _, err = io.ReadFull(f, buffer); err != nil {
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
 		return nil, err
 	}
-
-	h := sha256.New()
-	h.Write(buffer)
 
 	return h.Sum(nil), nil
 }

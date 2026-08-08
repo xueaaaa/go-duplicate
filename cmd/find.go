@@ -14,6 +14,7 @@ import (
 var findCmd = &cobra.Command{
 	Use:   "find <directory> [-s <sample-size>]",
 	Short: "Searches for identical files in the specified directory.",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := args[0]
 		info, err := os.Stat(dir)
@@ -22,7 +23,7 @@ var findCmd = &cobra.Command{
 			return
 		}
 		if !info.IsDir() {
-			fmt.Println(dir, "is not directory")
+			fmt.Println(dir, "is not a directory")
 			return
 		}
 

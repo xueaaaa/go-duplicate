@@ -41,7 +41,9 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 				return nil, err
 			}
 
-			fingerprints[[32]byte(hash)] = append(fingerprints[[32]byte(hash)], f)
+			var key [32]byte
+			copy(key[:], hash)
+			fingerprints[key] = append(fingerprints[key], f)
 		}
 	}
 
