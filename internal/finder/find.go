@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-duplicate/internal/file"
 	hash2 "go-duplicate/internal/hash"
+	"go-duplicate/internal/util"
 )
 
 func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PARAMS STRUCT **/) ([]DuplicateGroup, error) {
@@ -32,6 +33,9 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		for _, f := range v {
 			hash, err := hash2.Fingerprint(f, params)
 			if err != nil {
+				if util.IsSkippableFSError(err) {
+					continue
+				}
 				return nil, err
 			}
 

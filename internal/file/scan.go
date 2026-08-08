@@ -2,6 +2,8 @@ package file
 
 import (
 	"context"
+	"go-duplicate/internal/util"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -15,6 +17,9 @@ func Scan(ctx context.Context, dir string, out chan<- File) error {
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {
+		if util.IsSkippableFSError(err) {
+			return nil
+		}
 		return err
 	}
 
@@ -32,8 +37,15 @@ func Scan(ctx context.Context, dir string, out chan<- File) error {
 				return err
 			}
 		} else {
+			if entry.Type()&fs.ModeType != 0 {
+				continue
+			}
+
 			info, err := entry.Info()
 			if err != nil {
+				if util.IsSkippableFSError(err) {
+					continue
+				}
 				return err
 			}
 

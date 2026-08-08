@@ -12,6 +12,7 @@ func Hash(file file.File) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	buffer := make([]byte, file.Size)
 	if _, err = io.ReadFull(f, buffer); err != nil {
