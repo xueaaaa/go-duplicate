@@ -5,11 +5,12 @@ import (
 	"context"
 	"go-duplicate/internal/file"
 	hash2 "go-duplicate/internal/hash"
+	"go-duplicate/internal/params"
 	"go-duplicate/internal/util"
 	"slices"
 )
 
-func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PARAMS STRUCT **/) ([]DuplicateGroup, error) {
+func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGroup, error) {
 	files := make(chan file.File)
 	errors := make(chan error, 1)
 	go func() {
@@ -33,7 +34,7 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		}
 
 		for _, f := range v {
-			fingerprint, err := hash2.Fingerprint(f, params)
+			fingerprint, err := hash2.Fingerprint(f, params.SampleSize)
 			if err != nil {
 				if util.IsSkippableFSError(err) {
 					continue
@@ -47,7 +48,7 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		}
 	}
 
-	hashes := make (map[[32]byte][]file.File)
+	hashes := make(map[[32]byte][]file.File)
 	for _, v := range fingerprints {
 		if len(v) <= 1 {
 			continue

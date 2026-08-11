@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-duplicate/internal/finder"
 	"go-duplicate/internal/output"
+	"go-duplicate/internal/params"
 	"go-duplicate/internal/units"
 	"os"
 
@@ -12,8 +13,8 @@ import (
 )
 
 var findCmd = &cobra.Command{
-	Use:   "find <directory> [-s <sample-size>]",
-	Short: "Searches for identical files in the specified directory.",
+	Use:   "find <directory>",
+	Short: "Searches for identical files in the specified directory",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := args[0]
@@ -33,7 +34,25 @@ var findCmd = &cobra.Command{
 			return
 		}
 
-		groups, err := finder.Find(context.Background(), dir, sampleSize)
+		del, err := cmd.Flags().GetBool("delete")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		skipDryRun, err := cmd.Flags().GetBool("yes")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		params := params.Params{
+			SampleSize: sampleSize,
+			Delete:     del,
+			DryRun:     !skipDryRun,
+		}
+
+		groups, err := finder.Find(context.Background(), dir, params)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -44,6 +63,30 @@ var findCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
+
+		if params.Delete {
+			if params.DryRun {
+				confirm, err := output.PlainConfirm(os.Stdout, os.Stdin,
+					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				if !confirm {
+					fmt.Println("Aborted")
+					return
+				}
+			}
+
+			count, err := finder.Delete(groups)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			fmt.Printf("Deleted %d files\n", count)
+		}
 	},
 }
 
@@ -51,5 +94,9 @@ func init() {
 	rootCmd.AddCommand(findCmd)
 
 	findCmd.Flags().Int64P("sample-size", "s", 8*units.KiB,
-		"The size of the initial and final parts used to calculate the partial hash (fingerprint)")
+		"size in bytes of the initial and final parts used to calculate the partial hash (fingerprint)")
+	findCmd.Flags().BoolP("delete", "d", false,
+		"delete duplicate files, keeping only the first file in each group")
+	findCmd.Flags().BoolP("yes", "y", false,
+		"skip confirmation prompt (only applies with --delete)")
 }
