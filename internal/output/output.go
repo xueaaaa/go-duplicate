@@ -54,5 +54,9 @@ func PlainOutput(w io.Writer, groups []finder.DuplicateGroup, dir string) error 
 		}
 	}
 
+	if _, err := fmt.Fprintf(w, "\n"); err != nil {
+		return err
+	}
+
 	return nil
 }
