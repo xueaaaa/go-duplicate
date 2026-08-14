@@ -52,11 +52,18 @@ var findCmd = &cobra.Command{
 			return
 		}
 
+		silent, err := cmd.Flags().GetBool("silent")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
 		params := params.Params{
 			SampleSize: sampleSize,
 			Delete:     del,
 			Hardlink:   hardlink,
 			DryRun:     !skipDryRun,
+			Silent:     silent,
 		}
 
 		groups, err := finder.Find(context.Background(), dir, params)
@@ -125,11 +132,13 @@ func init() {
 	rootCmd.AddCommand(findCmd)
 
 	findCmd.Flags().Int64P("sample-size", "s", 8*units.KiB,
-		"size in bytes of the initial and final parts used to calculate the partial hash (fingerprint)")
+		"size in bytes of the initial and final parts used to calculate the partial hash/fingerprint")
 	findCmd.Flags().BoolP("delete", "d", false,
 		"delete duplicate files, keeping only the first file in each group")
 	findCmd.Flags().BoolP("hardlink", "l", false,
 		"converts duplicate files into hardlinks to the first file in the group")
 	findCmd.Flags().BoolP("yes", "y", false,
 		"skip confirmation prompt (only applies with --delete or --hardlink)")
+	findCmd.Flags().Bool("silent", false,
+		"disables the display of progress")
 }

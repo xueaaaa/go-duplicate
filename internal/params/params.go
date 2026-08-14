@@ -5,4 +5,5 @@ type Params struct {
 	DryRun     bool
 	Delete     bool
 	Hardlink   bool
+	Silent     bool
 }
