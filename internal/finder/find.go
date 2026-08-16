@@ -12,7 +12,7 @@ import (
 	"slices"
 )
 
-func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGroup, error) {
+func Find(ctx context.Context, dir string, params params.Params) (int64, []DuplicateGroup, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -25,21 +25,23 @@ func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGro
 		errors <- file.Scan(ctx, dir, files)
 	}()
 
+	filesCount := int64(0)
 	sizes := make(map[int64][]file.File)
 	for f := range files {
 		if !f.IsHardlink {
 			sizes[f.Size] = append(sizes[f.Size], f)
 		}
+		filesCount++
 
 		if bar != nil {
 			if err := bar.Add(1); err != nil {
-				return nil, err
+				return filesCount, nil, err
 			}
 		}
 	}
 
 	if err := <-errors; err != nil {
-		return nil, err
+		return filesCount, nil, err
 	}
 
 	if bar != nil {
@@ -66,14 +68,14 @@ func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGro
 			fingerprint, err := hash2.Fingerprint(f, params.SampleSize)
 			if bar != nil {
 				if err = bar.Add(1); err != nil {
-					return nil, err
+					return filesCount, nil, err
 				}
 			}
 			if err != nil {
 				if util.IsSkippableFSError(err) {
 					continue
 				}
-				return nil, err
+				return filesCount, nil, err
 			}
 
 			var key [32]byte
@@ -106,14 +108,14 @@ func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGro
 			hash, err := hash2.Hash(f)
 			if bar != nil {
 				if err = bar.Add(1); err != nil {
-					return nil, err
+					return filesCount, nil, err
 				}
 			}
 			if err != nil {
 				if util.IsSkippableFSError(err) {
 					continue
 				}
-				return nil, err
+				return filesCount, nil, err
 			}
 
 			var key [32]byte
@@ -145,5 +147,5 @@ func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGro
 		return cmp.Compare(b.FileSize, a.FileSize)
 	})
 
-	return groups, nil
+	return filesCount, groups, nil
 }

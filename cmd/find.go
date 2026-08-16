@@ -8,6 +8,7 @@ import (
 	"go-duplicate/internal/params"
 	"go-duplicate/internal/units"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -25,6 +26,19 @@ var findCmd = &cobra.Command{
 		}
 		if !info.IsDir() {
 			fmt.Println(dir, "is not a directory")
+			return
+		}
+
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		format = strings.TrimSpace(strings.ToLower(format))
+		if format != output.PLAIN || format != output.JSON {
+			err = fmt.Errorf("unknown output format")
+			fmt.Println(err)
 			return
 		}
 
@@ -59,6 +73,7 @@ var findCmd = &cobra.Command{
 		}
 
 		params := params.Params{
+			Format:     format,
 			SampleSize: sampleSize,
 			Delete:     del,
 			Hardlink:   hardlink,
@@ -131,6 +146,8 @@ var findCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(findCmd)
 
+	findCmd.Flags().StringP("format", "f", output.PLAIN,
+		"Output format of the program's results, plain and json output are available")
 	findCmd.Flags().Int64P("sample-size", "s", 8*units.KiB,
 		"size in bytes of the initial and final parts used to calculate the partial hash/fingerprint")
 	findCmd.Flags().BoolP("delete", "d", false,
