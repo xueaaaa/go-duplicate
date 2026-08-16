@@ -22,7 +22,7 @@ func NewStats(
 ) Stats {
 	duplicateFiles := 0
 	for _, g := range groups {
-		duplicateFiles += len(g.Files)
+		duplicateFiles += len(g.Files) - 1
 	}
 
 	return Stats{

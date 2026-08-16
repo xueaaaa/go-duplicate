@@ -1,7 +1,7 @@
 package file
 
 type File struct {
-	Path       string
-	Size       int64
-	IsHardlink bool
+	Path       string `json:"path"`
+	Size       int64  `json:"size_bytes"`
+	IsHardlink bool   `json:"hardlink"`
 }

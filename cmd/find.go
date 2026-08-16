@@ -21,54 +21,54 @@ var findCmd = &cobra.Command{
 		dir := args[0]
 		info, err := os.Stat(dir)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 		if !info.IsDir() {
-			fmt.Println(dir, "is not a directory")
+			fmt.Fprintln(os.Stderr, "is not a directory")
 			return
 		}
 
 		format, err := cmd.Flags().GetString("format")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		format = strings.TrimSpace(strings.ToLower(format))
-		if format != output.PLAIN || format != output.JSON {
+		if format != output.PLAIN && format != output.JSON {
 			err = fmt.Errorf("unknown output format")
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		sampleSize, err := cmd.Flags().GetInt64("sample-size")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		del, err := cmd.Flags().GetBool("delete")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		hardlink, err := cmd.Flags().GetBool("hardlink")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		skipDryRun, err := cmd.Flags().GetBool("yes")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		silent, err := cmd.Flags().GetBool("silent")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
@@ -81,64 +81,75 @@ var findCmd = &cobra.Command{
 			Silent:     silent,
 		}
 
-		groups, err := finder.Find(context.Background(), dir, params)
+		filesScanned, groups, err := finder.Find(context.Background(), dir, params)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		err = output.PlainOutput(os.Stdout, groups, dir)
-		if err != nil {
-			fmt.Println(err)
-			return
+		stats := output.NewStats(dir, filesScanned, groups)
+
+		switch format {
+		case output.PLAIN:
+			err = output.PlainOutput(os.Stdout, groups, stats)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+		case output.JSON:
+			err = output.JsonOutput(os.Stdout, groups, stats)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
 		}
 
 		if len(groups) > 0 && params.Delete {
 			if params.DryRun {
-				confirm, err := output.PlainConfirm(os.Stdout, os.Stdin,
+				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
 				if err != nil {
-					fmt.Println(err)
+					fmt.Fprintln(os.Stderr, err)
 					return
 				}
 
 				if !confirm {
-					fmt.Println("Aborted")
+					fmt.Fprintln(os.Stderr, "Aborted")
 					return
 				}
 			}
 
 			count, err := finder.Delete(groups)
 			if err != nil {
-				fmt.Printf("%d files deleted before error occurred: %s\n", count, err)
+				fmt.Fprintf(os.Stderr, "%d files deleted before error occurred: %s\n", count, err)
 				return
 			}
 
-			fmt.Printf("Deleted %d files\n", count)
+			fmt.Fprintf(os.Stderr, "Deleted %d files\n", count)
 		}
 
 		if len(groups) > 0 && params.Hardlink {
 			if params.DryRun {
-				confirm, err := output.PlainConfirm(os.Stdout, os.Stdin,
+				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))
 				if err != nil {
-					fmt.Println(err)
+					fmt.Fprintln(os.Stderr, err)
 					return
 				}
 
 				if !confirm {
-					fmt.Println("Aborted")
+					fmt.Fprintln(os.Stderr, "Aborted")
 					return
 				}
 			}
 
 			count, err := finder.Hardlink(groups)
 			if err != nil {
-				fmt.Printf("%d files converted into hard links before error occurred: %s\n", count, err)
+				fmt.Fprintf(os.Stderr, "%d files converted into hard links before error occurred: %s\n", count, err)
 				return
 			}
 
-			fmt.Printf("%d files converted into hard links", count)
+			fmt.Fprintf(os.Stderr, "%d files converted into hard links\n", count)
 		}
 	},
 }
@@ -158,4 +169,6 @@ func init() {
 		"skip confirmation prompt (only applies with --delete or --hardlink)")
 	findCmd.Flags().Bool("silent", false,
 		"disables the display of progress")
+
+	findCmd.MarkFlagsMutuallyExclusive("delete", "hardlink")
 }
