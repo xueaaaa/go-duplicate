@@ -78,7 +78,7 @@ var findCmd = &cobra.Command{
 			return
 		}
 
-		if params.Delete {
+		if len(groups) > 0 && params.Delete {
 			if params.DryRun {
 				confirm, err := output.PlainConfirm(os.Stdout, os.Stdin,
 					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
@@ -102,7 +102,7 @@ var findCmd = &cobra.Command{
 			fmt.Printf("Deleted %d files\n", count)
 		}
 
-		if params.Hardlink {
+		if len(groups) > 0 && params.Hardlink {
 			if params.DryRun {
 				confirm, err := output.PlainConfirm(os.Stdout, os.Stdin,
 					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))

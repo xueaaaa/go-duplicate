@@ -27,7 +27,9 @@ func Find(ctx context.Context, dir string, params params.Params) ([]DuplicateGro
 
 	sizes := make(map[int64][]file.File)
 	for f := range files {
-		sizes[f.Size] = append(sizes[f.Size], f)
+		if !f.IsHardlink {
+			sizes[f.Size] = append(sizes[f.Size], f)
+		}
 
 		if bar != nil {
 			if err := bar.Add(1); err != nil {
