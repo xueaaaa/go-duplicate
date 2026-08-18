@@ -62,7 +62,11 @@ func Scan(ctx context.Context, dir string, out chan<- File) error {
 				IsHardlink: stat.Nlink > 1,
 			}
 
-			out <- file
+			select {
+			case out <- file:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		}
 	}
 

@@ -24,7 +24,7 @@ type GroupJSON struct {
 	Files          []file.File `json:"files"`
 }
 
-func JsonOutput(w io.Writer, groups []finder.DuplicateGroup, stats Stats) error {
+func JSONOutput(w io.Writer, groups []finder.DuplicateGroup, stats Stats) error {
 	groupsJson := make([]GroupJSON, 0)
 
 	for _, g := range groups {

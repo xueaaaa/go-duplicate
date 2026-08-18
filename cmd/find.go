@@ -60,7 +60,7 @@ var findCmd = &cobra.Command{
 			return
 		}
 
-		skipDryRun, err := cmd.Flags().GetBool("yes")
+		skipConfirm, err := cmd.Flags().GetBool("yes")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
@@ -77,7 +77,7 @@ var findCmd = &cobra.Command{
 			SampleSize: sampleSize,
 			Delete:     del,
 			Hardlink:   hardlink,
-			DryRun:     !skipDryRun,
+			Confirm:    !skipConfirm,
 			Silent:     silent,
 		}
 
@@ -97,7 +97,7 @@ var findCmd = &cobra.Command{
 				return
 			}
 		case output.JSON:
-			err = output.JsonOutput(os.Stdout, groups, stats)
+			err = output.JSONOutput(os.Stdout, groups, stats)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return
@@ -105,7 +105,7 @@ var findCmd = &cobra.Command{
 		}
 
 		if len(groups) > 0 && params.Delete {
-			if params.DryRun {
+			if params.Confirm {
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
 				if err != nil {
@@ -129,7 +129,7 @@ var findCmd = &cobra.Command{
 		}
 
 		if len(groups) > 0 && params.Hardlink {
-			if params.DryRun {
+			if params.Confirm {
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))
 				if err != nil {
