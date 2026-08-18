@@ -10,6 +10,30 @@ import (
 	"syscall"
 )
 
+// Scan recursively walks dir and sends every regular file it finds to out.
+// It blocks on each send, so out must be drained concurrently (e.g. by a
+// goroutine reading from it) or Scan will deadlock. Scan does not close out.
+//
+// Non-existent directories and directories/files with denied access are
+// silently skipped (see util.IsSkippableFSError). Symlinks, sockets, devices,
+// and other non-regular files are skipped as well. Any other filesystem
+// error aborts the scan and is returned.
+//
+// Scan checks ctx before each directory read and before each send; if ctx
+// is cancelled, it stops and returns ctx.Err().
+//
+// # Usage
+//
+//	fileChan := make(chan File)
+//	go func() {
+//	    defer close(fileChan)
+//	    if err := Scan(ctx, dir, fileChan); err != nil {
+//	        log.Println(err)
+//	    }
+//	}()
+//	for f := range fileChan {
+//	    // process f
+//	}
 func Scan(ctx context.Context, dir string, out chan<- File) error {
 	select {
 	case <-ctx.Done():
