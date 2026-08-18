@@ -2,10 +2,12 @@ package file
 
 import (
 	"context"
+	"fmt"
 	"go-duplicate/internal/util"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 func Scan(ctx context.Context, dir string, out chan<- File) error {
@@ -49,12 +51,22 @@ func Scan(ctx context.Context, dir string, out chan<- File) error {
 				return err
 			}
 
-			file := File{
-				Path: entryPath,
-				Size: info.Size(),
+			stat, ok := info.Sys().(*syscall.Stat_t)
+			if !ok {
+				return fmt.Errorf("failed to get syscall.Stat_t for %s", entryPath)
 			}
 
-			out <- file
+			file := File{
+				Path:       entryPath,
+				Size:       info.Size(),
+				IsHardlink: stat.Nlink > 1,
+			}
+
+			select {
+			case out <- file:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		}
 	}
 

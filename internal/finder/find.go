@@ -3,13 +3,21 @@ package finder
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"go-duplicate/internal/file"
 	hash2 "go-duplicate/internal/hash"
+	"go-duplicate/internal/params"
 	"go-duplicate/internal/util"
+	"os"
 	"slices"
 )
 
-func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PARAMS STRUCT **/) ([]DuplicateGroup, error) {
+func Find(ctx context.Context, dir string, params params.Params) (int64, []DuplicateGroup, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	bar := util.NewBar(params.Silent, -1, "scanning directory...")
+
 	files := make(chan file.File)
 	errors := make(chan error, 1)
 	go func() {
@@ -17,14 +25,38 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		errors <- file.Scan(ctx, dir, files)
 	}()
 
+	filesCount := int64(0)
 	sizes := make(map[int64][]file.File)
 	for f := range files {
-		sizes[f.Size] = append(sizes[f.Size], f)
+		if !f.IsHardlink {
+			sizes[f.Size] = append(sizes[f.Size], f)
+		}
+		filesCount++
+
+		if bar != nil {
+			if err := bar.Add(1); err != nil {
+				return filesCount, nil, err
+			}
+		}
 	}
 
 	if err := <-errors; err != nil {
-		return nil, err
+		return filesCount, nil, err
 	}
+
+	if bar != nil {
+		bar.Finish()
+		fmt.Fprintln(os.Stderr)
+	}
+
+	fingerprintTotal := 0
+	for _, v := range sizes {
+		if len(v) > 1 {
+			fingerprintTotal += len(v)
+		}
+	}
+
+	bar = util.NewBar(params.Silent || fingerprintTotal == 0, fingerprintTotal, "calculating fingerprints...")
 
 	fingerprints := make(map[[32]byte][]file.File)
 	for _, v := range sizes {
@@ -33,22 +65,72 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		}
 
 		for _, f := range v {
-			hash, err := hash2.Fingerprint(f, params)
+			fingerprint, err := hash2.Fingerprint(f, params.SampleSize)
+			if bar != nil {
+				if err = bar.Add(1); err != nil {
+					return filesCount, nil, err
+				}
+			}
 			if err != nil {
 				if util.IsSkippableFSError(err) {
 					continue
 				}
-				return nil, err
+				return filesCount, nil, err
 			}
 
 			var key [32]byte
-			copy(key[:], hash)
+			copy(key[:], fingerprint)
 			fingerprints[key] = append(fingerprints[key], f)
 		}
 	}
 
+	if bar != nil {
+		bar.Finish()
+		fmt.Fprintln(os.Stderr)
+	}
+
+	hashesTotal := 0
+	for _, v := range fingerprints {
+		if len(v) > 1 {
+			hashesTotal += len(v)
+		}
+	}
+
+	bar = util.NewBar(params.Silent || hashesTotal == 0, hashesTotal, "calculating hashes...")
+
+	hashes := make(map[[32]byte][]file.File)
+	for _, v := range fingerprints {
+		if len(v) <= 1 {
+			continue
+		}
+
+		for _, f := range v {
+			hash, err := hash2.Hash(f)
+			if bar != nil {
+				if err = bar.Add(1); err != nil {
+					return filesCount, nil, err
+				}
+			}
+			if err != nil {
+				if util.IsSkippableFSError(err) {
+					continue
+				}
+				return filesCount, nil, err
+			}
+
+			var key [32]byte
+			copy(key[:], hash)
+			hashes[key] = append(hashes[key], f)
+		}
+	}
+
+	if bar != nil {
+		bar.Finish()
+		fmt.Fprintln(os.Stderr)
+	}
+
 	groups := make([]DuplicateGroup, 0)
-	for k, v := range fingerprints {
+	for k, v := range hashes {
 		if len(v) <= 1 {
 			continue
 		}
@@ -65,5 +147,5 @@ func Find(ctx context.Context, dir string, params int64 /** TODO REPLACE WITH PA
 		return cmp.Compare(b.FileSize, a.FileSize)
 	})
 
-	return groups, nil
+	return filesCount, groups, nil
 }

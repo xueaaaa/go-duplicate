@@ -5,44 +5,151 @@ import (
 	"fmt"
 	"go-duplicate/internal/finder"
 	"go-duplicate/internal/output"
+	"go-duplicate/internal/params"
 	"go-duplicate/internal/units"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var findCmd = &cobra.Command{
-	Use:   "find <directory> [-s <sample-size>]",
-	Short: "Searches for identical files in the specified directory.",
+	Use:   "find <directory>",
+	Short: "Searches for identical files in the specified directory",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := args[0]
 		info, err := os.Stat(dir)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 		if !info.IsDir() {
-			fmt.Println(dir, "is not a directory")
+			fmt.Fprintln(os.Stderr, "is not a directory")
+			return
+		}
+
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		format = strings.TrimSpace(strings.ToLower(format))
+		if format != output.PLAIN && format != output.JSON {
+			err = fmt.Errorf("unknown output format")
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		sampleSize, err := cmd.Flags().GetInt64("sample-size")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		groups, err := finder.Find(context.Background(), dir, sampleSize)
+		del, err := cmd.Flags().GetBool("delete")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		err = output.PlainOutput(os.Stdout, groups, dir)
+		hardlink, err := cmd.Flags().GetBool("hardlink")
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
+		}
+
+		skipConfirm, err := cmd.Flags().GetBool("yes")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		silent, err := cmd.Flags().GetBool("silent")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		params := params.Params{
+			Format:     format,
+			SampleSize: sampleSize,
+			Delete:     del,
+			Hardlink:   hardlink,
+			Confirm:    !skipConfirm,
+			Silent:     silent,
+		}
+
+		filesScanned, groups, err := finder.Find(context.Background(), dir, params)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		stats := output.NewStats(dir, filesScanned, groups)
+
+		switch format {
+		case output.PLAIN:
+			err = output.PlainOutput(os.Stdout, groups, stats)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+		case output.JSON:
+			err = output.JSONOutput(os.Stdout, groups, stats)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+		}
+
+		if len(groups) > 0 && params.Delete {
+			if params.Confirm {
+				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
+					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					return
+				}
+
+				if !confirm {
+					fmt.Fprintln(os.Stderr, "Aborted")
+					return
+				}
+			}
+
+			count, err := finder.Delete(groups)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%d files deleted before error occurred: %s\n", count, err)
+				return
+			}
+
+			fmt.Fprintf(os.Stderr, "Deleted %d files\n", count)
+		}
+
+		if len(groups) > 0 && params.Hardlink {
+			if params.Confirm {
+				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
+					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					return
+				}
+
+				if !confirm {
+					fmt.Fprintln(os.Stderr, "Aborted")
+					return
+				}
+			}
+
+			count, err := finder.Hardlink(groups)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%d files converted into hard links before error occurred: %s\n", count, err)
+				return
+			}
+
+			fmt.Fprintf(os.Stderr, "%d files converted into hard links\n", count)
 		}
 	},
 }
@@ -50,6 +157,18 @@ var findCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(findCmd)
 
+	findCmd.Flags().StringP("format", "f", output.PLAIN,
+		"Output format of the program's results, plain and json output are available")
 	findCmd.Flags().Int64P("sample-size", "s", 8*units.KiB,
-		"The size of the initial and final parts used to calculate the partial hash (fingerprint)")
+		"size in bytes of the initial and final parts used to calculate the partial hash/fingerprint")
+	findCmd.Flags().BoolP("delete", "d", false,
+		"delete duplicate files, keeping only the first file in each group")
+	findCmd.Flags().BoolP("hardlink", "l", false,
+		"converts duplicate files into hardlinks to the first file in the group")
+	findCmd.Flags().BoolP("yes", "y", false,
+		"skip confirmation prompt (only applies with --delete or --hardlink)")
+	findCmd.Flags().Bool("silent", false,
+		"disables the display of progress")
+
+	findCmd.MarkFlagsMutuallyExclusive("delete", "hardlink")
 }

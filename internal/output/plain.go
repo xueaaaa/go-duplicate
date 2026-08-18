@@ -8,14 +8,22 @@ import (
 	"io"
 )
 
-func PlainOutput(w io.Writer, groups []finder.DuplicateGroup, dir string) error {
-	saveSpace := units.CalculatePotentialSaveSpace(groups)
-	saveSpaceStr := units.PrintableSize(saveSpace)
+func PlainOutput(w io.Writer, groups []finder.DuplicateGroup, stats Stats) error {
+	saveSpaceStr := units.PrintableSize(stats.PotentialSavingBytes)
 
-	if _, err := fmt.Fprintf(w, "\nScanning complete (directory: %s)\n", dir); err != nil {
+	if _, err := fmt.Fprintf(w, "\nScanning complete (directory: %s)\n", stats.ScannedDir); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "Duplicate groups: %d\n", len(groups)); err != nil {
+	if _, err := fmt.Fprintf(w, "\nScanning complete at: %s\n", stats.ScannedAt); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "\nFiles scanned: %d\n", stats.FilesScanned); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "Duplicate groups: %d\n", stats.DuplicateGroups); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "Duplicate files: %d\n", stats.DuplicateFiles); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprintln(w, "Potential space savings:", saveSpaceStr); err != nil {
@@ -52,6 +60,10 @@ func PlainOutput(w io.Writer, groups []finder.DuplicateGroup, dir string) error 
 				return err
 			}
 		}
+	}
+
+	if _, err := fmt.Fprintf(w, "\n"); err != nil {
+		return err
 	}
 
 	return nil
