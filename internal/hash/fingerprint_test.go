@@ -72,7 +72,7 @@ func TestFingerprint(t *testing.T) {
 			}
 
 			h := sha256.New()
-			if int64(len(content)) <= tt.sampleSize {
+			if int64(len(content)) <= 2*tt.sampleSize {
 				h.Write(content)
 			} else {
 				h.Write(content[:tt.sampleSize])
