@@ -1,7 +1,8 @@
-package file
+package file_test
 
 import (
 	"context"
+	"go-duplicate/internal/file"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,12 +19,12 @@ func TestScan(t *testing.T) {
 	expected := 3
 
 	t.Run("primary", func(t *testing.T) {
-		fileChan := make(chan File)
+		fileChan := make(chan file.File)
 
 		go func() {
 			defer close(fileChan)
 
-			if err := Scan(context.Background(), dir, fileChan); err != nil {
+			if err := file.Scan(context.Background(), dir, fileChan); err != nil {
 				t.Error(err)
 			}
 		}()
@@ -46,12 +47,12 @@ func TestScan_EmptyDir(t *testing.T) {
 	expected := 0
 
 	t.Run("empty directory", func(t *testing.T) {
-		fileChan := make(chan File)
+		fileChan := make(chan file.File)
 
 		go func() {
 			defer close(fileChan)
 
-			if err := Scan(context.Background(), dir, fileChan); err != nil {
+			if err := file.Scan(context.Background(), dir, fileChan); err != nil {
 				t.Error(err)
 			}
 		}()
@@ -84,12 +85,12 @@ func TestScan_DeepRecursion(t *testing.T) {
 		expected := 4
 
 		t.Run("deep recursion", func(t *testing.T) {
-			fileChan := make(chan File)
+			fileChan := make(chan file.File)
 
 			go func() {
 				defer close(fileChan)
 
-				if err := Scan(context.Background(), dir, fileChan); err != nil {
+				if err := file.Scan(context.Background(), dir, fileChan); err != nil {
 					t.Error(err)
 				}
 			}()

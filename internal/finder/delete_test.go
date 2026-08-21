@@ -1,8 +1,9 @@
-package finder
+package finder_test
 
 import (
 	"fmt"
 	"go-duplicate/internal/file"
+	"go-duplicate/internal/finder"
 	"os"
 	"path/filepath"
 	"testing"
@@ -52,7 +53,7 @@ func TestDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := t.TempDir()
-			groups := make([]DuplicateGroup, 0)
+			groups := make([]finder.DuplicateGroup, 0)
 
 			for i, v := range tt.filesPerGroup {
 				files := make([]file.File, 0)
@@ -69,7 +70,7 @@ func TestDelete(t *testing.T) {
 					})
 				}
 
-				groups = append(groups, DuplicateGroup{
+				groups = append(groups, finder.DuplicateGroup{
 					Files: files,
 				})
 			}
@@ -81,7 +82,7 @@ func TestDelete(t *testing.T) {
 				}
 			}
 
-			count, err := Delete(groups)
+			count, err := finder.Delete(groups)
 			if err != nil {
 				if !tt.expectError {
 					t.Fatal(err)

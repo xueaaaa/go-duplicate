@@ -1,7 +1,8 @@
-package finder
+package finder_test
 
 import (
 	"context"
+	"go-duplicate/internal/finder"
 	"go-duplicate/internal/params"
 	"os"
 	"path/filepath"
@@ -38,7 +39,7 @@ func TestFind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, groups, err := Find(context.Background(), dir, params.Params{SampleSize: 4})
+			_, groups, err := finder.Find(context.Background(), dir, params.Params{SampleSize: 4})
 			if err != nil {
 				t.Fatal(err)
 			}
