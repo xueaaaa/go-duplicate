@@ -17,60 +17,51 @@ var findCmd = &cobra.Command{
 	Use:   "find <directory>",
 	Short: "Searches for identical files in the specified directory",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		dir := args[0]
 		info, err := os.Stat(dir)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 		if !info.IsDir() {
-			fmt.Fprintln(os.Stderr, "is not a directory")
-			return
+			return fmt.Errorf("%s is not a directory", dir)
 		}
 
 		formatString, err := cmd.Flags().GetString("format")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		formatString = strings.TrimSpace(strings.ToLower(formatString))
 		format := params.Format(formatString)
 		if !format.IsValid() {
 			err = fmt.Errorf("unknown output format")
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		sampleSize, err := cmd.Flags().GetInt64("sample-size")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		del, err := cmd.Flags().GetBool("delete")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		hardlink, err := cmd.Flags().GetBool("hardlink")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		skipConfirm, err := cmd.Flags().GetBool("yes")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		silent, err := cmd.Flags().GetBool("silent")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		p := params.Params{
@@ -84,8 +75,7 @@ var findCmd = &cobra.Command{
 
 		filesScanned, groups, err := finder.Find(context.Background(), dir, p)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
+			return err
 		}
 
 		stats := output.NewStats(dir, filesScanned, groups)
@@ -94,14 +84,12 @@ var findCmd = &cobra.Command{
 		case params.Plain:
 			err = output.PlainOutput(os.Stdout, groups, stats)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return
+				return err
 			}
 		case params.JSON:
 			err = output.JSONOutput(os.Stdout, groups, stats)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return
+				return err
 			}
 		}
 
@@ -110,20 +98,19 @@ var findCmd = &cobra.Command{
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
-					return
+					return err
 				}
 
 				if !confirm {
 					fmt.Fprintln(os.Stderr, "Aborted")
-					return
+					return nil
 				}
 			}
 
 			count, err := finder.Delete(groups)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%d files deleted before error occurred: %s\n", count, err)
-				return
+				fmt.Errorf("%d files deleted before error occurred: %s\n", count, err)
+				return err
 			}
 
 			fmt.Fprintf(os.Stderr, "Deleted %d files\n", count)
@@ -134,24 +121,25 @@ var findCmd = &cobra.Command{
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
-					return
+					return err
 				}
 
 				if !confirm {
 					fmt.Fprintln(os.Stderr, "Aborted")
-					return
+					return nil
 				}
 			}
 
 			count, err := finder.Hardlink(groups)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%d files converted into hard links before error occurred: %s\n", count, err)
-				return
+				return err
 			}
 
 			fmt.Fprintf(os.Stderr, "%d files converted into hard links\n", count)
 		}
+
+		return nil
 	},
 }
 

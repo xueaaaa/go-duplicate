@@ -34,6 +34,7 @@ type GroupJSON struct {
 	FileCount int `json:"file_count"`
 	// TotalSizeBytes is FileSizeBytes * FileCount — the combined size of all
 	// copies in the group (including the one that would be kept).
+	TotalSizeBytes int64
 	// Files lists the individual duplicate files, in the same order as
 	// finder.DuplicateGroup.Files (see that type for ordering caveats).
 	Files []file.File `json:"files"`
