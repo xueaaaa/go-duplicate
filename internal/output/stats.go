@@ -12,8 +12,8 @@ type Stats struct {
 	// ScannedDir is the directory path as passed to the scan (not
 	// resolved to an absolute path).
 	ScannedDir string `json:"scanned_dir"`
-	// ScannedAt is the time the scan started.
-	ScannedAt time.Time `json:"scanned_at"`
+	// ScannedAt is the time the stats snapshot was created (typically after
+	// the scan completes).
 	// FilesScanned is the total number of files scanned, as returned by
 	// [finder.Find] — regardless of whether duplicates were found.
 	FilesScanned int64 `json:"files_scanned"`
