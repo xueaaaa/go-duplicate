@@ -168,5 +168,11 @@ func Find(ctx context.Context, dir string, params params.Params) (int64, []Dupli
 		return cmp.Compare(b.FileSize, a.FileSize)
 	})
 
+	for i := range groups {
+		slices.SortFunc(groups[i].Files, func(a, b file.File) int {
+			return cmp.Compare(a.Path, b.Path)
+		})
+	}
+
 	return filesCount, groups, nil
 }

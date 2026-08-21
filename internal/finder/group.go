@@ -10,11 +10,7 @@ type DuplicateGroup struct {
 	Hash [32]byte
 	// FileSize is the size in bytes shared by every file in Files.
 	FileSize int64
-	// Files are the files that make up this duplicate group. There are
-	// always at least two.
-	//
-	// The order of Files is not guaranteed to be stable across calls to
-	// Find; if a specific file must be preserved by [Delete], the caller
-	// is responsible for reordering Files before calling Delete.
+	// Files are the files that make up this duplicate group, sorted by Path
+	// ascending. There are always at least two.
 	Files []file.File
 }
