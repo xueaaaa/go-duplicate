@@ -9,6 +9,11 @@ func TestPrintableSize(t *testing.T) {
 		expected string
 	}{
 		{
+			name:     "< 0",
+			size:     -1025,
+			expected: "-1025 B",
+		},
+		{
 			name:     "< KiB",
 			size:     1023,
 			expected: "1023 B",

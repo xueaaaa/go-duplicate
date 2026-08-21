@@ -55,7 +55,7 @@ func JSONOutput(w io.Writer, groups []finder.DuplicateGroup, stats Stats) error 
 			Hash:           hex.EncodeToString(g.Hash[:]),
 			FileSizeBytes:  g.FileSize,
 			FileCount:      len(g.Files),
-			TotalSizeBytes: g.FileSize*int64(len(g.Files)) - 1,
+			TotalSizeBytes: g.FileSize * int64(len(g.Files)),
 			Files:          g.Files,
 		}
 		groupsJson = append(groupsJson, group)

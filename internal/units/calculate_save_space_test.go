@@ -38,6 +38,11 @@ func TestCalculatePotentialSaveSpace(t *testing.T) {
 			},
 			expected: 9*10*Byte + 8*10*KiB + 7*10*MiB + 6*10*GiB + 5*10*TiB,
 		},
+		{
+			name:     "empty group",
+			groups:   make([]finder.DuplicateGroup, 0),
+			expected: 0,
+		},
 	}
 
 	for _, tt := range tests {
