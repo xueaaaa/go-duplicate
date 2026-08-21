@@ -21,7 +21,8 @@ func TestPlainOutput(t *testing.T) {
 		},
 	}
 
-	err := PlainOutput(&buf, groups, "/tmp")
+	stats := NewStats("/tmp", 2, groups)
+	err := PlainOutput(&buf, groups, stats)
 	if err != nil {
 		t.Fatal(err)
 	}

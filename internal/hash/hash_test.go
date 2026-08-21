@@ -1,9 +1,10 @@
-package hash
+package hash_test
 
 import (
 	"bytes"
 	"crypto/sha256"
 	"go-duplicate/internal/file"
+	"go-duplicate/internal/hash"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,7 +34,7 @@ func TestHash(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Hash(tt.file)
+			got, err := hash.Hash(tt.file)
 			if err != nil {
 				t.Fatal(err)
 			}

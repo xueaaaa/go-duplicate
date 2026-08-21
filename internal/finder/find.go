@@ -12,6 +12,27 @@ import (
 	"slices"
 )
 
+// Find scans dir for duplicate files and groups them by content.
+//
+// Find works in three narrowing passes: files are first grouped by size,
+// then candidate groups (size > 1) are grouped by a fingerprint computed
+// from a sample of each file ([hash2.Fingerprint], params.SampleSize bytes),
+// then remaining candidates are grouped by a full-content hash
+// ([hash2.Hash]). Only files that share size, fingerprint, and hash end up
+// in the same [DuplicateGroup]. Hardlinks (file.File.IsHardlink) are
+// excluded before the first pass and never appear in the result.
+//
+// Unless params.Silent is set, Find prints progress bars for each pass to
+// os.Stderr.
+//
+// Find returns the total number of files scanned (regardless of outcome)
+// and, on success, the duplicate groups sorted by descending file size.
+//
+// Errors from the initial directory scan are always fatal. During the
+// fingerprint and hash passes, errors satisfying util.IsSkippableFSError
+// cause the affected file to be skipped rather than aborting the scan; any
+// other error is fatal. On a fatal error, Find returns the files-scanned
+// count seen so far, a nil group slice, and the error.
 func Find(ctx context.Context, dir string, params params.Params) (int64, []DuplicateGroup, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

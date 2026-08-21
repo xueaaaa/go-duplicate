@@ -8,6 +8,22 @@ import (
 	"io"
 )
 
+// PlainOutput writes a human-readable summary of groups and stats to w:
+// scan metadata, aggregate stats, potential space savings, and then a
+// numbered listing of each duplicate group with its files. This format is
+// meant for terminal/log output, not for parsing — for a stable,
+// versioned machine-readable format use [JSONOutput] instead.
+//
+// If groups is empty, PlainOutput prints the stats followed by
+// "No duplicate files found" and returns, without a groups section.
+//
+// Files within each group are listed in the order they appear in
+// group.Files (see [finder.DuplicateGroup] for ordering caveats).
+// "Summary size" for a group is FileSize * len(Files) — the combined size
+// of all copies, not just the reclaimable space.
+//
+// PlainOutput stops at the first write error and returns it; on error, w
+// may contain a partially written report.
 func PlainOutput(w io.Writer, groups []finder.DuplicateGroup, stats Stats) error {
 	saveSpaceStr := units.PrintableSize(stats.PotentialSavingBytes)
 

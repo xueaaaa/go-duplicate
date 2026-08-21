@@ -29,14 +29,15 @@ var findCmd = &cobra.Command{
 			return
 		}
 
-		format, err := cmd.Flags().GetString("format")
+		formatString, err := cmd.Flags().GetString("format")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		format = strings.TrimSpace(strings.ToLower(format))
-		if format != output.PLAIN && format != output.JSON {
+		formatString = strings.TrimSpace(strings.ToLower(formatString))
+		format := params.Format(formatString)
+		if !format.IsValid() {
 			err = fmt.Errorf("unknown output format")
 			fmt.Fprintln(os.Stderr, err)
 			return
@@ -72,7 +73,7 @@ var findCmd = &cobra.Command{
 			return
 		}
 
-		params := params.Params{
+		p := params.Params{
 			Format:     format,
 			SampleSize: sampleSize,
 			Delete:     del,
@@ -81,7 +82,7 @@ var findCmd = &cobra.Command{
 			Silent:     silent,
 		}
 
-		filesScanned, groups, err := finder.Find(context.Background(), dir, params)
+		filesScanned, groups, err := finder.Find(context.Background(), dir, p)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
@@ -90,13 +91,13 @@ var findCmd = &cobra.Command{
 		stats := output.NewStats(dir, filesScanned, groups)
 
 		switch format {
-		case output.PLAIN:
+		case params.Plain:
 			err = output.PlainOutput(os.Stdout, groups, stats)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return
 			}
-		case output.JSON:
+		case params.JSON:
 			err = output.JSONOutput(os.Stdout, groups, stats)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -104,8 +105,8 @@ var findCmd = &cobra.Command{
 			}
 		}
 
-		if len(groups) > 0 && params.Delete {
-			if params.Confirm {
+		if len(groups) > 0 && p.Delete {
+			if p.Confirm {
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Delete duplicates in %d groups?", len(groups)))
 				if err != nil {
@@ -128,8 +129,8 @@ var findCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Deleted %d files\n", count)
 		}
 
-		if len(groups) > 0 && params.Hardlink {
-			if params.Confirm {
+		if len(groups) > 0 && p.Hardlink {
+			if p.Confirm {
 				confirm, err := output.PlainConfirm(os.Stderr, os.Stdin,
 					fmt.Sprintf("Convert duplicates into hard links in %d groups?", len(groups)))
 				if err != nil {
@@ -157,7 +158,7 @@ var findCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(findCmd)
 
-	findCmd.Flags().StringP("format", "f", output.PLAIN,
+	findCmd.Flags().StringP("format", "f", string(params.Plain),
 		"Output format of the program's results, plain and json output are available")
 	findCmd.Flags().Int64P("sample-size", "s", 8*units.KiB,
 		"size in bytes of the initial and final parts used to calculate the partial hash/fingerprint")
