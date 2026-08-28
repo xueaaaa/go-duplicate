@@ -1,7 +1,7 @@
 # go-duplicate
 
+![Build](https://github.com/xueaaaa/go-duplicate/actions/workflows/ci.yml/badge.svg)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/xueaaaa/go-duplicate)
-[![Go Report Card](https://goreportcard.com/badge/github.com/xueaaaa/go-duplicate)](https://goreportcard.com/report/github.com/xueaaaa/go-duplicate)
 [![Go Reference](https://pkg.go.dev/badge/github.com/xueaaaa/go-duplicate.svg)](https://pkg.go.dev/github.com/xueaaaa/go-duplicate)
 ![License](https://img.shields.io/github/license/xueaaaa/go-duplicate)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey)

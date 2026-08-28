@@ -1,0 +1,28 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # Start from the default set golangci-lint ships with (errcheck, govet,
+  # ineffassign, staticcheck, unused) and layer on a few extras that catch
+  # real bugs rather than just style nits.
+  default: standard
+  enable:
+    - gocritic     # catches common bug patterns and style issues
+    - gosec        # security-focused checks (unsafe file perms, etc.)
+    - misspell     # catches typos in comments/strings
+    - revive       # more configurable replacement for the deprecated golint
+    - unconvert    # flags unnecessary type conversions
+    - unparam      # flags unused function parameters
+
+  settings:
+    gosec:
+      # G304: file path provided by user input — expected and fine here,
+      # this is a CLI tool whose whole job is to open user-specified paths.
+      excludes:
+        - G304
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
