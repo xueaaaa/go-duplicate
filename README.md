@@ -1,10 +1,18 @@
+# go-duplicate
+
+![Go Version](https://img.shields.io/github/go-mod/go-version/xueaaaa/go-duplicate)
+[![Go Report Card](https://goreportcard.com/badge/github.com/xueaaaa/go-duplicate)](https://goreportcard.com/report/github.com/xueaaaa/go-duplicate)
+[![Go Reference](https://pkg.go.dev/badge/github.com/xueaaaa/go-duplicate.svg)](https://pkg.go.dev/github.com/xueaaaa/go-duplicate)
+![License](https://img.shields.io/github/license/xueaaaa/go-duplicate)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey)
+
 A CLI tool for finding and cleaning up duplicate files by content.
 
 It scans a directory tree and groups files by size. Then confirms real 
 duplicates using a fast partial fingerprint first, then a full SHA-256 
 comparison, so two different files are never reported as duplicates.
 
-# Features
+## Features
 
 - Recursive directory scan with size-based pre-grouping
 - Two-phase hashing to avoid false positives
@@ -12,7 +20,7 @@ comparison, so two different files are never reported as duplicates.
 - Delete redundant copies, or replace them with hard links
 - Detects files that are already hard-linked
 
-# Installation
+## Installation
 
 ```
 go install github.com/xueaaaa/go-duplicate@latest
@@ -23,23 +31,23 @@ Or build from source:
 ```
 git clone https://github.com/xueaaaa/go-duplicate.git
 cd go-duplicate
-go build -o godup .
+go build -o .
 ```
 
-# Requirements
+## Requirements
 
 - Go 1.26+ (see `go.mod`)
 - Any Unix-like OS
 
-# Usage
+## Usage
 
 ```
 go-duplicate <directory> [flags]
 ```
 
-## Basic scan
+### Basic scan
 
-### Plain output
+#### Plain output
 
 ```
 go-duplicate find /home/user/photos
@@ -72,13 +80,13 @@ Files:
 ...
 ```
 
-### JSON output
+#### JSON output
 
 ```
 go-duplicate find /home/user/photos --format json
 ```
 
-** Output example: **
+**Output example:**
 
 ```
 {
@@ -135,7 +143,7 @@ duplicate path still exists and still works, but they all point to the same data
 > any one of them will affect the others. Do not use `--hardlink` on files you may want to 
 > independently modify later.
 
-# Flags
+## Flags
 
 | **Flag**      | **Short** | **Default value** | **Description**                                                                             |
 |---------------|-----------|-------------------|---------------------------------------------------------------------------------------------|
@@ -146,23 +154,26 @@ duplicate path still exists and still works, but they all point to the same data
 | --yes         | -y        | false             | Skip confirmation prompt (only applies with `--delete` or `--hardlink`)                     |
 | --silent      |           | false             | Disable the progress bar                                                                    |
 
-# Known limitations
+## Known limitations
 
 - Hashing is currently single-threaded
 - Only one directory can be scanned per invocation
 - There is no `--exclude`/`--include` filtering yet
 - go-duplicate does not currently follow symlinks; symlinked files are skipped
 
-# Roadmap
+## Roadmap
 
 - `--workers` for parallel hashing for large scans
 - Multiple directories per invocation
 - `--exclude`/`--min-size` filters
 
-# Contributing
+## Contributing
 
 Issues and pull requests are welcome. Please run `go vet ./...` and `go test ./...` before submitting.
 
-# License
+## License
 
 See [LICENSE](LICENSE) for details.
+
+![Made with Go](https://img.shields.io/badge/Made%20with-Go-00ADD8?logo=go&logoColor=white)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
