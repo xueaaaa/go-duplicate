@@ -7,7 +7,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "godup",
+	Use:   "go-duplicate",
 	Short: "Find and work with identical files based on hash",
 	Long: `go-duplicate is a utility designed to find and work with duplicate files based on hashing. 
 It uses the SHA-256 hashing algorithm.
