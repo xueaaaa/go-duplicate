@@ -1,4 +1,4 @@
-module go-duplicate
+module github.com/xueaaaa/go-duplicate
 
 go 1.26
 
