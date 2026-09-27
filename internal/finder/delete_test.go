@@ -2,11 +2,12 @@ package finder_test
 
 import (
 	"fmt"
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/finder"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/finder"
 )
 
 func TestDelete(t *testing.T) {

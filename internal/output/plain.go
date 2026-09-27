@@ -3,9 +3,10 @@ package output
 import (
 	"encoding/hex"
 	"fmt"
-	"go-duplicate/internal/finder"
-	"go-duplicate/internal/units"
 	"io"
+
+	"github.com/xueaaaa/go-duplicate/internal/finder"
+	"github.com/xueaaaa/go-duplicate/internal/units"
 )
 
 // PlainOutput writes a human-readable summary of groups and stats to w:

@@ -2,11 +2,12 @@ package finder_test
 
 import (
 	"context"
-	"go-duplicate/internal/finder"
-	"go-duplicate/internal/params"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/finder"
+	"github.com/xueaaaa/go-duplicate/internal/params"
 )
 
 func TestFind(t *testing.T) {

@@ -2,9 +2,10 @@ package hash
 
 import (
 	"crypto/sha256"
-	"go-duplicate/internal/file"
 	"io"
 	"os"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
 )
 
 // Fingerprint returns a cheap, partial-content digest of file, suitable for

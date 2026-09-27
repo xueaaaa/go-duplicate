@@ -2,9 +2,10 @@ package hash
 
 import (
 	"crypto/sha256"
-	"go-duplicate/internal/file"
 	"io"
 	"os"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
 )
 
 // Hash returns the SHA-256 digest of the full contents of file, read

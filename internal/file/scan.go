@@ -3,11 +3,12 @@ package file
 import (
 	"context"
 	"fmt"
-	"go-duplicate/internal/util"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"syscall"
+
+	"github.com/xueaaaa/go-duplicate/internal/util"
 )
 
 // Scan recursively walks dir and sends every regular file it finds to out.

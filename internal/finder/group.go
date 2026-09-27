@@ -1,6 +1,6 @@
 package finder
 
-import "go-duplicate/internal/file"
+import "github.com/xueaaaa/go-duplicate/internal/file"
 
 // DuplicateGroup is a set of files with identical content, as found by
 // [Find].

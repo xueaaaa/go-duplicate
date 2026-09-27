@@ -1,6 +1,6 @@
 package main
 
-import "go-duplicate/cmd"
+import "github.com/xueaaaa/go-duplicate/cmd"
 
 func main() {
 	cmd.Execute()

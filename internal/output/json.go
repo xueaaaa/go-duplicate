@@ -3,9 +3,10 @@ package output
 import (
 	"encoding/hex"
 	"encoding/json"
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/finder"
 	"io"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/finder"
 )
 
 // SchemaVersion is the current version of the [Report] JSON schema.

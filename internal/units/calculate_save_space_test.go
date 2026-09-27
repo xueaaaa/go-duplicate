@@ -1,9 +1,10 @@
 package units
 
 import (
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/finder"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/finder"
 )
 
 func TestCalculatePotentialSaveSpace(t *testing.T) {

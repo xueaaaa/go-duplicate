@@ -3,12 +3,13 @@ package hash_test
 import (
 	"bytes"
 	"crypto/sha256"
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/hash"
-	"go-duplicate/internal/units"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/hash"
+	"github.com/xueaaaa/go-duplicate/internal/units"
 )
 
 func TestFingerprint(t *testing.T) {

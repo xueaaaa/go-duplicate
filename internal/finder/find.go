@@ -4,12 +4,13 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"go-duplicate/internal/file"
-	hash2 "go-duplicate/internal/hash"
-	"go-duplicate/internal/params"
-	"go-duplicate/internal/util"
 	"os"
 	"slices"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	hash2 "github.com/xueaaaa/go-duplicate/internal/hash"
+	"github.com/xueaaaa/go-duplicate/internal/params"
+	"github.com/xueaaaa/go-duplicate/internal/util"
 )
 
 // Find scans dir for duplicate files and groups them by content.

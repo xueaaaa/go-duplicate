@@ -2,10 +2,11 @@ package file_test
 
 import (
 	"context"
-	"go-duplicate/internal/file"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
 )
 
 func TestScan(t *testing.T) {

@@ -1,9 +1,10 @@
 package output
 
 import (
-	"go-duplicate/internal/finder"
-	"go-duplicate/internal/units"
 	"time"
+
+	"github.com/xueaaaa/go-duplicate/internal/finder"
+	"github.com/xueaaaa/go-duplicate/internal/units"
 )
 
 // Stats summarizes a single scan run. It is used both in [JSONOutput] and

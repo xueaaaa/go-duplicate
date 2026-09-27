@@ -1,6 +1,6 @@
 package units
 
-import "go-duplicate/internal/finder"
+import "github.com/xueaaaa/go-duplicate/internal/finder"
 
 // CalculatePotentialSaveSpace returns the total disk space, in bytes, that
 // could be reclaimed by keeping only one file per group and removing the

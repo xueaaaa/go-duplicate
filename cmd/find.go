@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"go-duplicate/internal/finder"
-	"go-duplicate/internal/output"
-	"go-duplicate/internal/params"
-	"go-duplicate/internal/units"
 	"os"
 	"strings"
+
+	"github.com/xueaaaa/go-duplicate/internal/finder"
+	"github.com/xueaaaa/go-duplicate/internal/output"
+	"github.com/xueaaaa/go-duplicate/internal/params"
+	"github.com/xueaaaa/go-duplicate/internal/units"
 
 	"github.com/spf13/cobra"
 )

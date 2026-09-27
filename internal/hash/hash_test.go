@@ -3,11 +3,12 @@ package hash_test
 import (
 	"bytes"
 	"crypto/sha256"
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/hash"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/hash"
 )
 
 func TestHash(t *testing.T) {

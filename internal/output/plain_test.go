@@ -2,10 +2,11 @@ package output
 
 import (
 	"bytes"
-	"go-duplicate/internal/file"
-	"go-duplicate/internal/finder"
 	"strings"
 	"testing"
+
+	"github.com/xueaaaa/go-duplicate/internal/file"
+	"github.com/xueaaaa/go-duplicate/internal/finder"
 )
 
 func TestPlainOutput(t *testing.T) {
